@@ -47,7 +47,8 @@ export default class MainView extends Component {
     } else {
       conversation = {messages: [], repoID: String(data.repoID)}
     }
-    conversation.messages.push(data.commentContent)
+    console.log(data)
+    conversation.messages.push({message: data.commentContent, sender: data.username})
     
     this.setState({activeConversations: conversations})
   }
@@ -55,16 +56,23 @@ export default class MainView extends Component {
   render() {
     if (this.state && this.state.activeConversations && this.state.users) {
       return (
-        <UserList users={this.state.users}
-                  activeConversations={this.state.activeConversations}
+        <div className="main-view">
+          <input type="text" placeholder="Username" onChange={this.usernameChanged}></input> 
+          <UserList users={this.state.users}
+                    activeConversations={this.state.activeConversations}
 
-                  commentsBeingWritten={this.state.commentsBeingWritten}
-                  commentTextChanged={this.commentTextChanged}
-                  addComment={this.addComment}/>
+                    commentsBeingWritten={this.state.commentsBeingWritten}
+                    commentTextChanged={this.commentTextChanged}
+                    addComment={this.addComment}/>
+        </div>
       );
     } else {
       return "idk tbh"
     }
+  }
+
+  usernameChanged = (event) => {
+    this.setState({username: event.target.value})
   }
 
   commentTextChanged = (event, repoID) => {
@@ -79,13 +87,12 @@ export default class MainView extends Component {
     this.socket.emit("addComment", {
                                     repoID: repoID,
                                     commentContent: this.state.commentsBeingWritten[repoID],
-                                    topic: this.state.users.find(user => user.repoID === repoID).repo
+                                    topic: this.state.users.find(user => user.repoID === repoID).repo,
+                                    username: this.state.username
                                   })
     
     const commentsBeingWritten = {...this.state.commentsBeingWritten}
-    console.log(commentsBeingWritten)
     delete commentsBeingWritten[repoID]
-    console.log(commentsBeingWritten)
     this.setState({commentsBeingWritten: commentsBeingWritten})
   }
 
